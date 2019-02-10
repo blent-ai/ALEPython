@@ -1,4 +1,5 @@
 
+
 [![Build Status](https://travis-ci.org/MaximeJumelle/ALEPython.svg?branch=dev)](https://travis-ci.org/MaximeJumelle/ALEPython)
 
 Python Accumulated Local Effects package.
@@ -12,8 +13,10 @@ Python Accumulated Local Effects package.
 
 First-order ALE plots of continuous features
 
-![ALE Plot][resources/fo_ale_quant.png]
+<center><img src='https://github.com/MaximeJumelle/ALEPython/raw/dev/resources/fo_ale_quant.png'></center>
+
+---
 
 Second-order ALE plots of continuous features
 
-![ALE Plot][resources/so_ale_quant.png]
+<center><img src='https://github.com/MaximeJumelle/ALEPython/raw/dev/resources/so_ale_quant.png'></center>
