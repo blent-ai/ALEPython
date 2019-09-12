@@ -79,6 +79,18 @@ def _ax_boxplot(ax, ALE, cat, **kwargs):
 def _ax_hist(ax, x, **kwargs):
 	sns.rugplot(x, ax=ax, alpha=0.2)
 
+def _check_model(model):
+	"""
+	Check model input, return number of target classes and predict function
+	"""
+	try: # classification
+		n_classes = len(model.classes_)
+		predict = model.predict_proba
+	except: # regression
+		n_classes = 0
+		predict = model.predict
+
+	return n_classes, predict
 
 def _first_order_quant_plot(ax, quantiles, ALE, **kwargs):
 	#ax.plot(quantiles, ALE, **kwargs)
@@ -103,7 +115,7 @@ def _second_order_quant_plot(ax, quantiles, ALE, **kwargs):
 	#CS = ax.contour(X, Y, ALE_interp(x, y), levels=30, cmap='inferno', alpha=0.99)
 	#ax.clabel(CS, inline=1, fontsize=10)
 
-def _first_order_ale_quant(predictor, train_set, feature, quantiles):
+def _first_order_ale_quant(predictor, train_set, feature, quantiles, num_features=0):
 	"""Computes first-order ALE function on single continuous feature data.
 
 	Parameters
@@ -129,14 +141,21 @@ def _first_order_ale_quant(predictor, train_set, feature, quantiles):
 			# The main ALE idea that compute prediction difference between same data except feature's one
 			z_low[feature] = quantiles[i - 1]
 			z_up[feature] = quantiles[i]
-			ALE[i - 1] += (predictor(z_up.values) - predictor(z_low.values)).sum() / subset.shape[0]
+
+			# Compute ALE
+			ale = (predictor(z_up.values) - predictor(z_low.values)).sum() / subset.shape[0]
+
+			if num_features == 0: # if regression
+				ALE[i-1] = ale	
+			else:
+				ALE[i-1] = ale[1]
 
 	
 	ALE = ALE.cumsum()  # The accumulated effect
 	ALE -= ALE.mean()  # Now we have to center ALE function in order to obtain null expectation for ALE function
 	return ALE
 
-def _second_order_ale_quant(predictor, train_set, features, quantiles):
+def _second_order_ale_quant(predictor, train_set, features, quantiles, num_features=0):
 	"""Computes second-order ALE function on two continuous features data.
 
 	
@@ -165,14 +184,20 @@ def _second_order_ale_quant(predictor, train_set, features, quantiles):
 				z_up[1][features[0]] = quantiles[0, i]
 				z_up[1][features[1]] = quantiles[0, j]
 
-				ALE[i, j] += (predictor(z_up[1].values) - predictor(z_up[0].values) - (predictor(z_low[1].values) - predictor(z_low[0].values))).sum() / subset.shape[0]
+				# Compute ale
+				ale =  (predictor(z_up[1].values) - predictor(z_up[0].values) - (predictor(z_low[1].values) - predictor(z_low[0].values))).sum() / subset.shape[0]
 
+
+				if num_features == 0: # if regression
+					ALE[i,j] = ale
+				else: # for classification
+					ALE[i,j] = ale[1]
 	
 	ALE = np.cumsum(ALE, axis=0) # The accumulated effect
 	ALE -= ALE.mean()  # Now we have to center ALE function in order to obtain null expectation for ALE function
 	return ALE
 
-def _first_order_ale_cat(predictor, train_set, feature, features_classes, feature_encoder=None):
+def _first_order_ale_cat(predictor, train_set, feature, features_classes, feature_encoder=None, num_features=0):
 	"""Computes first-order ALE function on single categorical feature data.
 
 	Parameters
@@ -201,8 +226,14 @@ def _first_order_ale_cat(predictor, train_set, feature, features_classes, featur
 			# The main ALE idea that compute prediction difference between same data except feature's one
 			z_low[feature] = quantiles[i - 1]
 			z_up[feature] = quantiles[i]
-			ALE[i] += (predictor(z_up.values) - predictor(z_low.values)).sum() / subset.shape[0]
 
+			# Compute ale
+			ale = (predictor(z_up.values) - predictor(z_low.values)).sum() / subset.shape[0]
+
+			if num_features == 0: # if regression
+				ALE[i] = ale 
+			else: # if classification
+				ALE[i] = ale[1]
 	
 	ALE = ALE.cumsum()  # The accumulated effect
 	ALE -= ALE.mean()  # Now we have to center ALE function in order to obtain null expectation for ALE function
@@ -239,6 +270,9 @@ def ale_plot(model, train_set, features, bins=10, monte_carlo=False, predictor=N
 	if not isinstance(features, (list, tuple, np.ndarray)):
 		features = np.asarray([features])
 
+	# Determine type of model and get predict function
+    num_features, predictor = _check_model(model)
+
 	if len(features) == 1:
 		quantiles = np.percentile(train_set[features[0]], [1. / bins * i * 100 for i in range(0, bins + 1)])  # Splitted areas of feature
 
@@ -249,11 +283,11 @@ def ale_plot(model, train_set, features, bins=10, monte_carlo=False, predictor=N
 			for k, rep in enumerate(mc_replicates):
 				train_set_rep = train_set.iloc[rep, :]
 				if features_classes is None:
-					mc_ALE = _first_order_ale_quant(model.predict if predictor is None else predictor, train_set_rep, features[0], quantiles)
+					mc_ALE = _first_order_ale_quant(model.predict if predictor is None else predictor, train_set_rep, features[0], quantiles, num_features)
 					_first_order_quant_plot(fig.gca(), quantiles, mc_ALE, color="#1f77b4", alpha=0.06)
 
 		if features_classes is None:
-			ALE = _first_order_ale_quant(model.predict if predictor is None else predictor, train_set, features[0], quantiles)
+			ALE = _first_order_ale_quant(model.predict if predictor is None else predictor, train_set, features[0], quantiles, num_features)
 			_ax_labels(fig.gca(), "Feature '{}'".format(features[0]), "")
 			_ax_title(fig.gca(), "First-order ALE of feature '{0}'".format(features[0]),
 				"Bins : {0} - Monte-Carlo : {1}".format(len(quantiles) - 1, mc_replicates.shape[0] if monte_carlo else "False"))
@@ -267,7 +301,7 @@ def ale_plot(model, train_set, features, bins=10, monte_carlo=False, predictor=N
 		quantiles = [np.percentile(train_set[f], [1. / bins * i * 100 for i in range(0, bins + 1)]) for f in features]
 
 		if features_classes is None:
-			ALE = _second_order_ale_quant(model.predict if predictor is None else predictor, train_set, features, quantiles)
+			ALE = _second_order_ale_quant(model.predict if predictor is None else predictor, train_set, features, quantiles, num_features)
 			#_ax_scatter(fig.gca(), train_set.loc[:, features])
 			_second_order_quant_plot(fig.gca(), quantiles, ALE)
 			_ax_labels(fig.gca(), "Feature '{}'".format(features[0]), "Feature '{}'".format(features[1]))
