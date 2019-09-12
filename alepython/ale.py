@@ -129,7 +129,7 @@ def _first_order_ale_quant(predictor, train_set, feature, quantiles):
 			# The main ALE idea that compute prediction difference between same data except feature's one
 			z_low[feature] = quantiles[i - 1]
 			z_up[feature] = quantiles[i]
-			ALE[i - 1] += (predictor(z_up.values) - predictor(z_low.values)).sum() / subset.shape[0]
+			ALE[i - 1] += (predictor(z_up) - predictor(z_low)).sum() / subset.shape[0]
 
 	
 	ALE = ALE.cumsum()  # The accumulated effect
@@ -165,7 +165,7 @@ def _second_order_ale_quant(predictor, train_set, features, quantiles):
 				z_up[1][features[0]] = quantiles[0, i]
 				z_up[1][features[1]] = quantiles[0, j]
 
-				ALE[i, j] += (predictor(z_up[1].values) - predictor(z_up[0].values) - (predictor(z_low[1].values) - predictor(z_low[0].values))).sum() / subset.shape[0]
+				ALE[i, j] += (predictor(z_up[1]) - predictor(z_up[0]) - (predictor(z_low[1]) - predictor(z_low[0]))).sum() / subset.shape[0]
 
 	
 	ALE = np.cumsum(ALE, axis=0) # The accumulated effect
@@ -201,7 +201,7 @@ def _first_order_ale_cat(predictor, train_set, feature, features_classes, featur
 			# The main ALE idea that compute prediction difference between same data except feature's one
 			z_low[feature] = quantiles[i - 1]
 			z_up[feature] = quantiles[i]
-			ALE[i] += (predictor(z_up.values) - predictor(z_low.values)).sum() / subset.shape[0]
+			ALE[i] += (predictor(z_up) - predictor(z_low)).sum() / subset.shape[0]
 
 	
 	ALE = ALE.cumsum()  # The accumulated effect
