@@ -148,8 +148,11 @@ def _second_order_ale_quant(predictor, train_set, features, quantiles):
 
 	for i in range(1, len(quantiles[0])):
 		for j in range(1, len(quantiles[1])):
-			subset = train_set[(quantiles[0, i - 1] <= train_set[features[0]]) & (train_set[features[0]] < quantiles[0, i]) &
-					(quantiles[1, i - 1] <= train_set[features[1]]) & (train_set[features[1]] < quantiles[1, i])]
+			# Select subset of training data that falls within subset
+            subset = train_set[(quantiles[0,i-1] <= train_set[features[0]]) &
+                               (quantiles[0,i] > train_set[features[0]]) &
+                               (quantiles[1,j-1] <= train_set[features[1]]) &
+                               (quantiles[1,j] > train_set[features[1]])]
 
 			# Without any observation, local effect on splitted area is null
 			if len(subset) != 0:
@@ -157,13 +160,13 @@ def _second_order_ale_quant(predictor, train_set, features, quantiles):
 				z_up = [subset.copy() for _ in range(2)]  # The upper bound on accumulated grid
 				# The main ALE idea that compute prediction difference between same data except feature's one
 				z_low[0][features[0]] = quantiles[0, i - 1]
-				z_low[0][features[1]] = quantiles[0, j - 1]
+				z_low[0][features[1]] = quantiles[1, j - 1]
 				z_low[1][features[0]] = quantiles[0, i]
-				z_low[1][features[1]] = quantiles[0, j - 1]
+				z_low[1][features[1]] = quantiles[1, j - 1]
 				z_up[0][features[0]] = quantiles[0, i - 1]
-				z_up[0][features[1]] = quantiles[0, j]
+				z_up[0][features[1]] = quantiles[1, j]
 				z_up[1][features[0]] = quantiles[0, i]
-				z_up[1][features[1]] = quantiles[0, j]
+				z_up[1][features[1]] = quantiles[1, j]
 
 				ALE[i, j] += (predictor(z_up[1]) - predictor(z_up[0]) - (predictor(z_low[1]) - predictor(z_low[0]))).sum() / subset.shape[0]
 
