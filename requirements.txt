@@ -1,5 +1,6 @@
+loguru>=0.4.1
+matplotlib>=2.2.3
 numpy>=1.15.4
 pandas>=0.22.0
-seaborn>=0.9.0
-matplotlib>=2.2.3
 scipy>=1.1.0
+seaborn>=0.9.0

@@ -115,3 +115,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Package version.
+_version.py
+
+# Pre-commit configuration file.
+.pre-commit-config.yaml
+
+# Git attributes.
+.gitattributes
