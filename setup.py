@@ -25,7 +25,7 @@ setup(
     use_scm_version=dict(write_to="src/alepython/_version.py"),
     keywords="alepython",
     package_dir={"": "src"},
-    packages=find_packages(),
+    packages=find_packages(where="src"),
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -19,7 +19,9 @@ def assert_n_created_figures(n=1):
     yield  # Do not catch exceptions (ie. no try except).
     new_fignums = set(plt.get_fignums()) - set(initial_fignums)
     n_new = len(new_fignums)
-    assert n_new == n, f"Expected '{n}' figure(s), got '{n_new}'."
+    assert n_new == n, "Expected '{n}' figure(s), got '{n_new}'.".format(
+        n=n, n_new=n_new
+    )
 
 
 @pytest.mark.parametrize(

@@ -17,6 +17,9 @@ from scipy.spatial import cKDTree
 logger.disable("alepython")
 
 
+__all__ = ("ale_plot",)
+
+
 def _parse_features(features):
     """Standardise representation of column labels.
 

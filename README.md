@@ -29,18 +29,13 @@ pip install alepython
 ```
 directly from source (including requirements):
 ```sh
-pip install https://github.com/MaximeJumelle/ALEPython/archive/dev.zip
+pip install git+https://github.com/MaximeJumelle/ALEPython.git@dev#egg=alepython
 ```
-or after cloning (or forking) for development purposes:
+or after cloning (or forking) for development purposes, including test dependencies:
 ```sh
 git clone https://github.com/MaximeJumelle/ALEPython.git
-pip install -e ALEPython
+pip install -e "ALEPython[test]"
 ```
-To install test (using `pytest`) dependencies for the last case, run
-```sh
-pip install ".[test]"
-```
-in the root directory of the repository.
 
 # Usage
 
