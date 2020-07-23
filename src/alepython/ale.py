@@ -786,3 +786,4 @@ def ale_plot(
             )
         )
     plt.show()
+    return ax
