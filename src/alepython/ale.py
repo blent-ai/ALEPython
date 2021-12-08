@@ -692,7 +692,7 @@ def ale_plot(
     """
     if model is None and predictor is None:
         raise ValueError("If 'model' is None, 'predictor' must be supplied.")
-
+    print('test')
     if features_classes is not None:
         raise NotImplementedError("'features_classes' is not implemented yet.")
 
