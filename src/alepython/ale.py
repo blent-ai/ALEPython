@@ -646,6 +646,7 @@ def ale_plot(
     monte_carlo_rep=50,
     monte_carlo_ratio=0.1,
     rugplot_lim=1000,
+    mark_empty=True
 ):
     """Plots ALE function of specified features based on training set.
 
@@ -677,6 +678,8 @@ def ale_plot(
     rugplot_lim : int, optional
         If `train_set` has more rows than `rugplot_lim`, no rug plot will be plotted.
         Set to None to always plot rug plots. Set to 0 to always plot rug plots.
+    mark_empty : bool, optional
+        If True, plot rectangles over bins that did not contain any samples. 
 
     Raises
     ------
@@ -764,7 +767,7 @@ def ale_plot(
                 features,
                 bins,
             )
-            _second_order_quant_plot(fig, ax, quantiles_list, ale)
+            _second_order_quant_plot(fig, ax, quantiles_list, ale, mark_empty=mark_empty)
             _ax_labels(
                 ax,
                 "Feature '{}'".format(features[0]),
